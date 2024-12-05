@@ -4,3 +4,5 @@ data/
 .env
 
 z_*
+react-vector-tiles-demographics/node_modules
+node_modules/
