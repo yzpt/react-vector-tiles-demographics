@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Plot from "react-plotly.js";
 
-const AgeSexPyramid = ({ data }) => {
+const Pyramid = ({ data }) => {
   const [maxScale, setMaxScale] = useState(1000); // Default max population scale
 
   if (!data || data.length === 0) {
@@ -56,7 +56,6 @@ const AgeSexPyramid = ({ data }) => {
           },
         ]}
         layout={{
-          title: "Age/Sex Pyramid",
           barmode: "relative",
           xaxis: {
             // title: "Population",
@@ -85,4 +84,4 @@ const AgeSexPyramid = ({ data }) => {
   );
 };
 
-export default AgeSexPyramid;
+export default Pyramid;

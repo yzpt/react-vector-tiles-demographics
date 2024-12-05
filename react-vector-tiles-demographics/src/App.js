@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
-import AgeSexPyramid from "./AgeSexPyramid";
+import Pyramid from "./Pyramid";
 import { createRoot } from "react-dom/client";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -34,7 +34,7 @@ const App = () => {
         id: "vector-layer",
         type: "fill",
         source: "tiles",
-        "source-layer": "communes100m",
+        "source-layer": "commune100mwithtotalpopulation",
         paint: {
           "fill-color": "blue",
           "fill-opacity": 0.2,
@@ -60,7 +60,7 @@ const App = () => {
             .then((response) => response.json())
             .then((data) => {
               if (pyramidRootRef.current) {
-                pyramidRootRef.current.render(<AgeSexPyramid data={data} />);
+                pyramidRootRef.current.render(<Pyramid data={data} />);
               }
             })
             .catch((error) => {
