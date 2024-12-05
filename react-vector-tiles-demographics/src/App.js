@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
+import AgeSexPyramid from "./AgeSexPyramid";
+import { createRoot } from "react-dom/client";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 mapboxgl.accessToken = "pk.eyJ1IjoieXpwdCIsImEiOiJjbHcyYTIzdWgwZzltMmtsOHg0NnUxaWpjIn0.0PM0eN5gsw8ipJ-ToUTDkg";
@@ -7,9 +9,11 @@ mapboxgl.accessToken = "pk.eyJ1IjoieXpwdCIsImEiOiJjbHcyYTIzdWgwZzltMmtsOHg0NnUxa
 const App = () => {
   const mapContainer = useRef(null);
   const panelContainer = useRef(null);
-  const dbInfosContainer = useRef(null);
+  const pyramidContainer = useRef(null);
+  const pyramidRootRef = useRef(null); // Reference for React root
 
   useEffect(() => {
+    // Initialize map
     const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/light-v10",
@@ -36,57 +40,72 @@ const App = () => {
         },
       });
 
+      // Create the root only once
+      if (pyramidContainer.current && !pyramidRootRef.current) {
+        pyramidRootRef.current = createRoot(pyramidContainer.current);
+      }
+
       map.on("mousemove", "vector-layer", (e) => {
         const properties = e.features[0]?.properties;
         if (properties) {
-          // Update the panel with feature information
+          // Update the panel
           panelContainer.current.innerHTML = `
             <h3>Feature Information</h3>
             <pre>${JSON.stringify(properties, null, 2)}</pre>
           `;
 
-          // Fetch data from the server and update db_infos
+          // Fetch data and render pyramid
           fetch(`http://localhost:5000/data?CODGEO=${properties.code}`)
-            .then(response => response.json())
-            .then(data => {
-              dbInfosContainer.current.innerHTML = `
-                <h3>Database Information</h3>
-                <pre>${JSON.stringify(data, null, 2)}</pre>
-              `;
+            .then((response) => response.json())
+            .then((data) => {
+              if (pyramidRootRef.current) {
+                pyramidRootRef.current.render(<AgeSexPyramid data={data} />);
+              }
             })
-            .catch(error => {
-              dbInfosContainer.current.innerHTML = `<p>Error fetching data: ${error.message}</p>`;
+            .catch((error) => {
+              if (pyramidContainer.current) {
+                pyramidContainer.current.innerHTML = `<p>Error fetching data: ${error.message}</p>`;
+              }
             });
         }
         map.getCanvas().style.cursor = "pointer";
       });
 
       map.on("mouseleave", "vector-layer", () => {
-        // Reset cursor and clear panel
+        // Reset cursor and clear content
         map.getCanvas().style.cursor = "";
         panelContainer.current.innerHTML = "<p>Hover over a feature to see details here.</p>";
-        dbInfosContainer.current.innerHTML = "";
+        if (pyramidRootRef.current) {
+          pyramidRootRef.current.render(null); // Clear React tree
+        }
       });
     });
 
-    return () => map.remove();
+    return () => {
+      map.remove();
+      if (pyramidRootRef.current) {
+        pyramidRootRef.current.unmount(); // Cleanup React root
+      }
+    };
   }, []);
 
   return (
     <div style={{ display: "flex", flexDirection: "row", width: "100vw", height: "100vh" }}>
-      <div
-        id="panel"
-        ref={panelContainer}
-        style={{
-          flex: 1,
-          padding: "10px",
-          borderRight: "1px solid #ccc",
-          overflowY: "auto",
-        }}
-      >
-        <p>Hover over a feature to see details here.</p>
+      <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+        <div
+          id="panel"
+          ref={panelContainer}
+          style={{
+            flex: 1,
+            padding: "10px",
+            borderRight: "1px solid #ccc",
+            overflowY: "auto",
+          }}
+        >
+          <p>Hover over a feature to see details here.</p>
+        </div>
+        <div id="pyramid_container" ref={pyramidContainer} style={{ flex: 1 }}></div>
       </div>
-      <div id="db_infos" ref={dbInfosContainer} style={{ flex: 1 }}></div>
       <div ref={mapContainer} style={{ flex: 2 }}></div>
     </div>
   );

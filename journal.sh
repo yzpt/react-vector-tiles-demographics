@@ -124,10 +124,15 @@ echo "node_modules/" >> .gitignore
 
 cd react-vector-tiles-demographics
 npm install react-map-gl mapbox-gl
+npm install web-vitals
 npm start
 
-
-npm install web-vitals
-
-
 pip install flask-cors
+python3 flask_app.py
+cd react-vector-tiles-demographics && npm start
+
+
+cd react-vector-tiles-demographics
+npm install plotly.js react-plotly.js
+
+npm install react-dom
