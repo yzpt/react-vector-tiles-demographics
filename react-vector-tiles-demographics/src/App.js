@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import Pyramid from "./Pyramid";
 import { createRoot } from "react-dom/client";
 import "mapbox-gl/dist/mapbox-gl.css";
+import * as d3 from 'd3';
 
 mapboxgl.accessToken = "pk.eyJ1IjoieXpwdCIsImEiOiJjbHcyYTIzdWgwZzltMmtsOHg0NnUxaWpjIn0.0PM0eN5gsw8ipJ-ToUTDkg";
 
@@ -11,7 +12,6 @@ const App = () => {
   const panelContainer = useRef(null);
   const pyramidContainer = useRef(null);
   const pyramidRootRef = useRef(null); // Reference for React root
-  // const [range, setRange] = useState(10); // State for the range slider
 
   useEffect(() => {
     // Initialize map
@@ -30,14 +30,32 @@ const App = () => {
         minzoom: 5,
       });
 
+      // Define color scale based on total_population_sum
+      const colorScale = d3.scaleSequential(d3.interpolateViridis)
+        .domain([0, 40000]); // adjust the domain to your data range
+
       map.addLayer({
         id: "vector-layer",
         type: "fill",
         source: "tiles",
         "source-layer": "commune100mwithtotalpopulation",
         paint: {
-          "fill-color": "blue",
-          "fill-opacity": 0.2,
+          // Color each polygon based on the total_population_sum column
+          "fill-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "total_population_sum"], // Get the total_population_sum value from the properties
+            0, colorScale(0),
+            5000, colorScale(5000),
+            10000, colorScale(10000),
+            15000, colorScale(15000),
+            20000, colorScale(20000),
+            25000, colorScale(25000),
+            30000, colorScale(30000),
+            35000, colorScale(35000),
+            40000, colorScale(40000) // Adjust the max value to your data's range
+          ],
+          "fill-opacity": 0.6,
         },
       });
 
@@ -88,7 +106,7 @@ const App = () => {
         pyramidRootRef.current.unmount(); // Cleanup React root
       }
     };
-  }); // Add range as a dependency to refetch data on change
+  }, []); // Empty dependency array to run only once
 
   return (
     <div style={{ display: "flex", flexDirection: "row", width: "100vw", height: "100vh" }}>
