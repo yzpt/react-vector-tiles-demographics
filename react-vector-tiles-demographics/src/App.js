@@ -55,7 +55,7 @@ const App = () => {
             35000, colorScale(35000),
             40000, colorScale(40000) // Adjust the max value to your data's range
           ],
-          "fill-opacity": 0.6,
+          "fill-opacity": 0.5,
         },
       });
 

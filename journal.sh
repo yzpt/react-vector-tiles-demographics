@@ -143,4 +143,6 @@ tile-join -o data/communes-100m_bis.mbtiles -x code -c data/total_population.csv
 
 tippecanoe -o data/communes-100m.mbtiles -z12 data/commune-100m-with-total-population.geojson --force
 
+cd react-vector-tiles-demographics
+npm install d3
 
