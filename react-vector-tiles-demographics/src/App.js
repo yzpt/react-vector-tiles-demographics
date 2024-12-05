@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import AgeSexPyramid from "./AgeSexPyramid";
 import { createRoot } from "react-dom/client";
@@ -11,6 +11,7 @@ const App = () => {
   const panelContainer = useRef(null);
   const pyramidContainer = useRef(null);
   const pyramidRootRef = useRef(null); // Reference for React root
+  // const [range, setRange] = useState(10); // State for the range slider
 
   useEffect(() => {
     // Initialize map
@@ -55,7 +56,7 @@ const App = () => {
           `;
 
           // Fetch data and render pyramid
-          fetch(`http://localhost:5000/data?CODGEO=${properties.code}`)
+          fetch(`http://localhost:5000/data?CODGEO=${properties.code}&range=10`)
             .then((response) => response.json())
             .then((data) => {
               if (pyramidRootRef.current) {
@@ -87,7 +88,7 @@ const App = () => {
         pyramidRootRef.current.unmount(); // Cleanup React root
       }
     };
-  }, []);
+  }); // Add range as a dependency to refetch data on change
 
   return (
     <div style={{ display: "flex", flexDirection: "row", width: "100vw", height: "100vh" }}>

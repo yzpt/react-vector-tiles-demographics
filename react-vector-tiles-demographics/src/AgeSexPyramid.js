@@ -1,53 +1,87 @@
-import React from "react";
+import React, { useState } from "react";
 import Plot from "react-plotly.js";
 
 const AgeSexPyramid = ({ data }) => {
+  const [maxScale, setMaxScale] = useState(1000); // Default max population scale
+
   if (!data || data.length === 0) {
     return <p>No demographic data available</p>;
   }
 
   // Parse the data into a suitable format for the pyramid
-  const maleData = data
-    .filter(item => item.SEXE === 1)
-    .map(item => ({ age: item.AGED100, value: -item.NB }));
-  const femaleData = data
-    .filter(item => item.SEXE === 2)
-    .map(item => ({ age: item.AGED100, value: item.NB }));
+  const maleData = data.map((item) => ({
+    age: item.AGE_GROUP,
+    value: -item.MALE,
+  }));
 
-  const ages = [...new Set([...maleData, ...femaleData].map(d => d.age))].sort(
-    (a, b) => a - b
-  );
-  const maleValues = ages.map(age => maleData.find(d => d.age === age)?.value || 0);
-  const femaleValues = ages.map(age => femaleData.find(d => d.age === age)?.value || 0);
+  const femaleData = data.map((item) => ({
+    age: item.AGE_GROUP,
+    value: item.FEMALE,
+  }));
+
+  const ages = data.map((item) => item.AGE_GROUP);
+
+  const maleValues = maleData.map((item) => item.value);
+  const femaleValues = femaleData.map((item) => item.value);
+
+  // Calculate the max value from male and female data
+  const maxValue = Math.max(...maleValues, ...femaleValues);
+
+  // If the maxValue exceeds the current maxScale, temporarily adjust the scale
+  const adjustedMaxScale = maxValue > maxScale ? maxValue : maxScale;
+
+  const handleSliderChange = (e) => {
+    setMaxScale(e.target.value);
+  };
 
   return (
-    <Plot
-      data={[
-        {
-          x: maleValues,
-          y: ages,
-          name: "Male",
-          type: "bar",
-          orientation: "h",
-          marker: { color: "blue" },
-        },
-        {
-          x: femaleValues,
-          y: ages,
-          name: "Female",
-          type: "bar",
-          orientation: "h",
-          marker: { color: "pink" },
-        },
-      ]}
-      layout={{
-        title: "Age/Sex Pyramid",
-        barmode: "relative",
-        xaxis: { title: "Population", tickformat: "," },
-        yaxis: { title: "Age" },
-        height: 400,
-      }}
-    />
+    <div>
+      <Plot
+        data={[
+          {
+            x: maleValues,
+            y: ages,
+            name: "Male",
+            type: "bar",
+            orientation: "h",
+            marker: { color: "blue" },
+          },
+          {
+            x: femaleValues,
+            y: ages,
+            name: "Female",
+            type: "bar",
+            orientation: "h",
+            marker: { color: "pink" },
+          },
+        ]}
+        layout={{
+          title: "Age/Sex Pyramid",
+          barmode: "relative",
+          xaxis: {
+            // title: "Population",
+            tickformat: ",",
+            range: [-adjustedMaxScale, adjustedMaxScale],
+          },
+          yaxis: { title: "Age" },
+          height: 400,
+        }}
+      />
+      {/* <div>
+        <label>
+          Max Scale: {maxScale}
+          <input
+            type="range"
+            min="0"
+            max="5000"
+            step="100"
+            value={maxScale}
+            onChange={handleSliderChange}
+            style={{ width: "100%" }}
+          />
+        </label>
+      </div> */}
+    </div>
   );
 };
 
